@@ -4,8 +4,7 @@
 #  Usage: ./run.sh
 # ─────────────────────────────────────────────────────────────
 
-MAIN_CLASS="com.fittrack.Main"
-SRC_DIR="src/main/java"
+MAIN_CLASS="Main"
 OUT_DIR="out"
 LIB_DIR="lib"
 SQLITE_JAR="$LIB_DIR/sqlite-jdbc.jar"
@@ -21,6 +20,9 @@ echo -e "======================================${NC}"
 
 if ! command -v javac &> /dev/null; then
     echo -e "${RED}ERROR: javac not found. Please install JDK 17+${NC}"
+    echo "  Ubuntu/Debian: sudo apt install default-jdk"
+    echo "  macOS:         brew install openjdk"
+    echo "  Download:      https://adoptium.net"
     exit 1
 fi
 echo -e "${GREEN}Java found.${NC}"
@@ -40,12 +42,18 @@ download_jar "https://repo1.maven.org/maven2/org/xerial/sqlite-jdbc/3.45.1.0/sql
 download_jar "https://repo1.maven.org/maven2/org/slf4j/slf4j-api/2.0.9/slf4j-api-2.0.9.jar" "$SLF4J_API" "slf4j-api.jar"
 download_jar "https://repo1.maven.org/maven2/org/slf4j/slf4j-simple/2.0.9/slf4j-simple-2.0.9.jar" "$SLF4J_SIMPLE" "slf4j-simple.jar"
 
+echo ""
 echo "Building..."
 mkdir -p "$OUT_DIR"
-javac -cp "$SQLITE_JAR" -d "$OUT_DIR" $(find "$SRC_DIR" -name "*.java")
-[ $? -ne 0 ] && echo -e "${RED}BUILD FAILED.${NC}" && exit 1
+javac -cp "$SQLITE_JAR" -d "$OUT_DIR" *.java
+
+if [ $? -ne 0 ]; then
+    echo -e "${RED}BUILD FAILED. See errors above.${NC}"; exit 1
+fi
 echo -e "${GREEN}Build successful!${NC}"
 
 mkdir -p reports
+echo ""
+echo "Starting FitTrack CLI..."
 echo ""
 java -cp "$CP" "$MAIN_CLASS"
